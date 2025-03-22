@@ -222,22 +222,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -4935488376014910186, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
-      propertyPath: m_AngularDrag
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 2521332528284686798, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
-      propertyPath: Speed
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 2521332528284686798, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
-      propertyPath: JumpForce
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 2521332528284686798, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
-      propertyPath: GroundDrag
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 7810706503396885531, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
