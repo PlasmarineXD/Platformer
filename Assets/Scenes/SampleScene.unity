@@ -269,7 +269,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8608136663949058295, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1830619697}
+    - targetCorrespondingSourceObject: {fileID: 8608136663949058295, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1830619696}
   m_SourcePrefab: {fileID: 100100000, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
 --- !u!1 &1622695714
 GameObject:
@@ -787,6 +793,54 @@ Transform:
   - {fileID: 1622695715}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1830619686 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8608136663949058295, guid: 885f7ed800026bc4594262e9a1e4ed5f, type: 3}
+  m_PrefabInstance: {fileID: 968107497}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1830619696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830619686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c72cdb2964321cd42a637dfe9d43a6a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitbox: {fileID: 0}
+  lightComboButton:
+    m_Name: Light Combo Button
+    m_Type: 1
+    m_ExpectedControlType: Button
+    m_Id: b1fed7b5-9467-4e86-beb8-697c346d0443
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: 1ac4bf80-9a88-4efe-85ba-ee5a44f6b068
+      m_Path: <Keyboard>/c
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Light Combo Button
+      m_Flags: 0
+    m_Flags: 0
+--- !u!114 &1830619697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830619686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebdcc0e13c81882439fee732102fcb6a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  customName: Combat
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

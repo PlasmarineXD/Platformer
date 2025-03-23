@@ -13,6 +13,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float Speed = 2f;
 
     public Rigidbody2D rb { get; private set; }
+    private Animator animator;
 
 
     [Header("Jump Settings")]
@@ -25,32 +26,40 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float coyoteTime = 0.2f;
     private float coyoteTimeCounter;
 
-    public bool OnGround { get { return bOnGround; } }
-    public bool IsJumping { get { return bIsJumping; } }
-
-
+    [Header("Dash Setting")]
+    private bool bCanDash = true;
+    private bool bIsDashing;
+    [SerializeField] float DashPower = 24f;
+    [SerializeField] float DashingTime = 0.2f;
+    [SerializeField] float DashCoolDown = 1f;
+    [SerializeField] TrailRenderer TrailRenderer;
 
     [Header("Gravity Settings")]
-    [SerializeField] float fallMultiplier = 2.5f;
-    [SerializeField] float maxJumpTime = 0.2f;
-    private float jumpTimeCounter;
+    [SerializeField] float FallMultiplier = 2.5f;
+    [SerializeField] float MaxJumpTime = 0.2f;
+    private float JumpTimeCounter;
 
     [Header("Input")]
     [SerializeField] InputAction MoveAction;
     [SerializeField] InputAction Jump;
+    [SerializeField] InputAction DashAction;
 
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
 
         MoveAction.Enable();
         Jump.Enable();
+        DashAction.Enable();
     }
 
     private void Update()
     {
-        Debug.Log(rb.velocity.y);
+        if (bIsDashing)
+            return;
+
         //Horizontal Movement
         Move = MoveAction.ReadValue<float>();
         FlipSprite();
@@ -69,13 +78,13 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, JumpForce);
             coyoteTimeCounter = 0;
             bIsJumping = true;
-            jumpTimeCounter = maxJumpTime;
+            JumpTimeCounter = MaxJumpTime;
         }
         if (Jump.IsPressed() && bIsJumping)
         {
-            if(jumpTimeCounter > 0)
+            if(JumpTimeCounter > 0)
             {
-                jumpTimeCounter -= Time.deltaTime;
+                JumpTimeCounter -= Time.deltaTime;
             }
             else
                 bIsJumping = false;
@@ -83,25 +92,38 @@ public class PlayerController : MonoBehaviour
         if (!Jump.IsPressed())
             bIsJumping = false;
 
+        if(DashAction.WasPressedThisFrame() && bCanDash)
+        {
+            StartCoroutine(Dash());
+        }
 
     }
 
     private void FixedUpdate()
     {
+        if (bIsDashing)
+            return;
+
         HorizontalMovement();
+        animator.SetFloat("xVelocity", Mathf.Abs(rb.velocity.x));
+        animator.SetFloat("yVelocity", rb.velocity.y);
 
         bOnGround = Physics2D.Raycast(rb.position, Vector2.down, LenghtGroundCheck, WhatIsGround);
+        animator.SetBool("OnGround", bOnGround);
         //Debug.DrawLine(rb.position, Vector2.down * LenghtGroundCheck, Color.red);
 
 
         //Jump
-        if (rb.velocity.y < 0 || (rb.velocity.y > 0 && !bIsJumping)) // Falling
+        if (!bIsDashing)
         {
-            rb.gravityScale = fallMultiplier;
-        }
-        else // Normal gravity
-        {
-            rb.gravityScale = 1f;
+            if (rb.velocity.y < 0 || (rb.velocity.y > 0 && !bIsJumping)) // Falling
+            {
+                rb.gravityScale = FallMultiplier;
+            }
+            else // Normal gravity
+            {
+                rb.gravityScale = 1f;
+            }
         }
     }
 
@@ -116,5 +138,23 @@ public class PlayerController : MonoBehaviour
         {
             transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
         }
-    }    
+    }
+    
+    private IEnumerator Dash()
+    {
+        bCanDash = false;
+        bIsDashing = true;
+        animator.SetBool("IsDashing", true);
+        float OriginalGravity = rb.gravityScale;
+        rb.gravityScale = 0f;
+        rb.velocity = new Vector2(Direction * DashPower, 0f);
+        TrailRenderer.emitting = true;
+        yield return new WaitForSeconds(DashingTime);
+        TrailRenderer.emitting = false;
+        rb.gravityScale = OriginalGravity;
+        bIsDashing = false;
+        animator.SetBool("IsDashing", false);
+        yield return new WaitForSeconds(DashCoolDown);
+        bCanDash = true;
+    }
 }
