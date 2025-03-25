@@ -46,7 +46,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float WallJumpingDuration = 0.2f;
     [SerializeField] Vector2 wallJumpingForce = new Vector2(8f, 16f);
     private float wallJumpingCounter;
-    private float wallJumpingDirection;
 
     [Header("Gravity Settings")]
     [SerializeField] float FallMultiplier = 2.5f;
@@ -161,7 +160,10 @@ public class PlayerController : MonoBehaviour
 
     private void HorizontalMovement()
     {
-        rb.velocity = new Vector2(Move * Speed, rb.velocity.y);
+        if(bOnGround)
+            rb.velocity = new Vector2(Move * Speed, rb.velocity.y);
+        else
+            rb.velocity = new Vector2(Move * Speed * 0.8f, rb.velocity.y);
     }
     
     private void FlipSprite()
@@ -232,19 +234,14 @@ public class PlayerController : MonoBehaviour
             if (Jump.WasPressedThisFrame() && wallJumpingCounter > 0)
             {
                 bIsJumping = true;
-                rb.velocity = new Vector2(wallJumpingForce.x * wallJumpingDirection, wallJumpingForce.y);
+                rb.velocity = new Vector2(wallJumpingForce.x * Direction * -1, wallJumpingForce.y);
                 wallJumpingCounter = 0;
-                if (transform.localScale.x != wallJumpingDirection)
-                {
-                    Direction *= -1;
-                }
             }
         }
         else
         {
             bIsJumping = false;
             wallJumpingCounter = WallJumpingDuration;
-            wallJumpingDirection = -transform.localScale.x;
         }
     }
 }
