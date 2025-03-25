@@ -9,12 +9,15 @@ public class PlayerController : MonoBehaviour
     //Movement
     [Header("Movement Settings")]
     private float Move;
-    private float Direction = 1;
+    public float Direction = 1;
     [SerializeField] float Speed = 2f;
 
     public Rigidbody2D rb { get; private set; }
     private Animator animator;
-
+    private GhostingEffect ghostingEffect;
+    private StateMachine Machine;
+    [SerializeField] GameObject cameraFollowObject;
+    private CameraFollow Camera;
 
     [Header("Jump Settings")]
     private bool bOnGround = true;
@@ -32,7 +35,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float DashPower = 24f;
     [SerializeField] float DashingTime = 0.2f;
     [SerializeField] float DashCoolDown = 1f;
-    [SerializeField] TrailRenderer TrailRenderer;
+
+    [Header("Wall Sliding Setting")]
+    private bool bIsWallSliding;
+    [SerializeField] float wallSlidingSpeed = 2f;
+    [SerializeField] Transform wallCheck;
+    [SerializeField] LayerMask wallCheckLayer;
+
+    [Header("Wall Jumping Setting")]
+    [SerializeField] float WallJumpingDuration = 0.2f;
+    [SerializeField] Vector2 wallJumpingForce = new Vector2(8f, 16f);
+    private float wallJumpingCounter;
+    private float wallJumpingDirection;
 
     [Header("Gravity Settings")]
     [SerializeField] float FallMultiplier = 2.5f;
@@ -44,11 +58,14 @@ public class PlayerController : MonoBehaviour
     [SerializeField] InputAction Jump;
     [SerializeField] InputAction DashAction;
 
-
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        ghostingEffect = GetComponent<GhostingEffect>();
+        Machine = GetComponent<StateMachine>();
+        Camera = cameraFollowObject.GetComponent<CameraFollow>();
+        Debug.Log(Camera);
 
         MoveAction.Enable();
         Jump.Enable();
@@ -68,55 +85,70 @@ public class PlayerController : MonoBehaviour
 
         //Jumping
         if (bOnGround)
+        {
             coyoteTimeCounter = coyoteTime;
-        else
-            coyoteTimeCounter -= Time.deltaTime;
-
-
-        if (Jump.WasPressedThisFrame() && coyoteTimeCounter > 0 && bOnGround && !bIsJumping)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, JumpForce);
-            coyoteTimeCounter = 0;
-            bIsJumping = true;
-            JumpTimeCounter = MaxJumpTime;
-        }
-        if (Jump.IsPressed() && bIsJumping)
-        {
-            if(JumpTimeCounter > 0)
+            if(bIsWallSliding)
             {
-                JumpTimeCounter -= Time.deltaTime;
+                bIsWallSliding = false;
+                animator.SetBool("IsWallSliding", bIsWallSliding);
             }
-            else
+        }
+        else
+        {
+            WallSlide();
+            coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        if (!bIsWallSliding)
+        {
+            if (Jump.WasPressedThisFrame() && coyoteTimeCounter > 0 && bOnGround && !bIsJumping)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, JumpForce);
+                coyoteTimeCounter = 0;
+                bIsJumping = true;
+                JumpTimeCounter = MaxJumpTime;
+            }
+            if (Jump.IsPressed() && bIsJumping)
+            {
+                if (JumpTimeCounter > 0)
+                {
+                    JumpTimeCounter -= Time.deltaTime;
+                }
+                else
+                    bIsJumping = false;
+            }
+            if (!Jump.IsPressed())
                 bIsJumping = false;
         }
-        if (!Jump.IsPressed())
-            bIsJumping = false;
+        else
+        {
+            if(!bIsJumping)
+                WallJumping();
+        }
 
-        if(DashAction.WasPressedThisFrame() && bCanDash)
+        if(DashAction.WasPressedThisFrame() && bCanDash && !bIsWallSliding)
         {
             StartCoroutine(Dash());
         }
-
     }
 
     private void FixedUpdate()
     {
         if (bIsDashing)
             return;
+        if (!bIsWallSliding)
+            HorizontalMovement();
 
-        HorizontalMovement();
         animator.SetFloat("xVelocity", Mathf.Abs(rb.velocity.x));
         animator.SetFloat("yVelocity", rb.velocity.y);
 
         bOnGround = Physics2D.Raycast(rb.position, Vector2.down, LenghtGroundCheck, WhatIsGround);
         animator.SetBool("OnGround", bOnGround);
-        //Debug.DrawLine(rb.position, Vector2.down * LenghtGroundCheck, Color.red);
-
 
         //Jump
         if (!bIsDashing)
         {
-            if (rb.velocity.y < 0 || (rb.velocity.y > 0 && !bIsJumping)) // Falling
+            if ((rb.velocity.y < 0 || (rb.velocity.y > 0 && !bIsJumping)) && !bIsWallSliding) // Falling
             {
                 rb.gravityScale = FallMultiplier;
             }
@@ -136,7 +168,19 @@ public class PlayerController : MonoBehaviour
     {
         if (Move > 0 && Direction < 0 || Move < 0 && Direction > 0)
         {
-            transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+            //transform.localScale = new Vector3(transform.localScale.x * -1, transform.localScale.y, transform.localScale.z);
+            if (Direction < 0)
+            {
+                Vector3 rotator = new Vector3(transform.rotation.x, 0f, transform.rotation.z);
+                transform.rotation = Quaternion.Euler(rotator);
+                Camera.CallTurn();
+            }
+            else if (Direction > 0)
+            {
+                Vector3 rotator = new Vector3(transform.rotation.x, 180f, transform.rotation.z);
+                transform.rotation = Quaternion.Euler(rotator);
+                Camera.CallTurn();
+            }
         }
     }
     
@@ -145,16 +189,62 @@ public class PlayerController : MonoBehaviour
         bCanDash = false;
         bIsDashing = true;
         animator.SetBool("IsDashing", true);
+        ghostingEffect.enableGhost = true;
         float OriginalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(Direction * DashPower, 0f);
-        TrailRenderer.emitting = true;
         yield return new WaitForSeconds(DashingTime);
-        TrailRenderer.emitting = false;
         rb.gravityScale = OriginalGravity;
         bIsDashing = false;
         animator.SetBool("IsDashing", false);
+        ghostingEffect.enableGhost = false;
         yield return new WaitForSeconds(DashCoolDown);
         bCanDash = true;
+    }
+
+    private bool IsWall()
+    {
+        return Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallCheckLayer);
+    }
+
+    private void WallSlide()
+    {
+        if (rb.velocity.y <= 0)
+        {
+            if (IsWall() && !bOnGround && Move != 0f && !bIsDashing && !bIsJumping)
+            {
+                bIsWallSliding = true;
+                rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
+            }
+            else
+            {
+                bIsWallSliding = false;
+            }
+            animator.SetBool("IsWallSliding", bIsWallSliding);
+        }
+    }
+
+    private void WallJumping()
+    {
+        if (wallJumpingCounter > 0)
+        {
+            wallJumpingCounter -= Time.deltaTime;
+            if (Jump.WasPressedThisFrame() && wallJumpingCounter > 0)
+            {
+                bIsJumping = true;
+                rb.velocity = new Vector2(wallJumpingForce.x * wallJumpingDirection, wallJumpingForce.y);
+                wallJumpingCounter = 0;
+                if (transform.localScale.x != wallJumpingDirection)
+                {
+                    Direction *= -1;
+                }
+            }
+        }
+        else
+        {
+            bIsJumping = false;
+            wallJumpingCounter = WallJumpingDuration;
+            wallJumpingDirection = -transform.localScale.x;
+        }
     }
 }

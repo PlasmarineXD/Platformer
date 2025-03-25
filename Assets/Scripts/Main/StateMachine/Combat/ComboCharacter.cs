@@ -18,12 +18,9 @@ public class ComboCharacter : MonoBehaviour
 
     private void Update()
     {
-        if (meleeStateMachine.currentState.GetType() == typeof(IdleCombatState))
+        if (lightComboButton.WasPressedThisFrame() && meleeStateMachine.currentState.GetType() == typeof(IdleCombatState))
         {
-            if (lightComboButton.WasPressedThisFrame())
-            {
-                meleeStateMachine.SetNextState(new OnGroundLightEntryState(lightComboButton));
-            }
+            meleeStateMachine.SetNextState(new OnGroundLightEntryState(lightComboButton));
         }
     }
 }
