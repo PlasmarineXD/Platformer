@@ -18,11 +18,13 @@ public class PlayerController : MonoBehaviour
     private StateMachine Machine;
     [SerializeField] GameObject cameraFollowObject;
     private CameraFollow Camera;
+    private ComboCharacter comboCharacter;
 
     [Header("Jump Settings")]
     private bool bOnGround = true;
     private bool bIsJumping = false;
     [SerializeField] float JumpForce = 5f;
+    [SerializeField] float AirControl = 0.8f;
     [SerializeField] LayerMask WhatIsGround;
     [SerializeField] float LenghtGroundCheck = 0.5f;
 
@@ -52,6 +54,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float MaxJumpTime = 0.2f;
     private float JumpTimeCounter;
 
+    public bool OnGround { get { return bOnGround; } }
+    public bool IsWallSliding { get { return bIsWallSliding; } }
+    public bool IsDashing { get { return bIsDashing; } }
+
     [Header("Input")]
     [SerializeField] InputAction MoveAction;
     [SerializeField] InputAction Jump;
@@ -64,7 +70,7 @@ public class PlayerController : MonoBehaviour
         ghostingEffect = GetComponent<GhostingEffect>();
         Machine = GetComponent<StateMachine>();
         Camera = cameraFollowObject.GetComponent<CameraFollow>();
-        Debug.Log(Camera);
+        comboCharacter = GetComponent<ComboCharacter>();
 
         MoveAction.Enable();
         Jump.Enable();
@@ -160,10 +166,15 @@ public class PlayerController : MonoBehaviour
 
     private void HorizontalMovement()
     {
-        if(bOnGround)
-            rb.velocity = new Vector2(Move * Speed, rb.velocity.y);
+        if (!comboCharacter.combatMode)
+        {
+            if (bOnGround)
+                rb.velocity = new Vector2(Move * Speed, rb.velocity.y);
+            else
+                rb.velocity = new Vector2(Move * Speed * AirControl, rb.velocity.y);
+        }
         else
-            rb.velocity = new Vector2(Move * Speed * 0.8f, rb.velocity.y);
+            rb.velocity = new Vector2(0, 0);
     }
     
     private void FlipSprite()

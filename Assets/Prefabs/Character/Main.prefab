@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4056047040496889058}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: WallCheck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48,7 +48,7 @@ GameObject:
   - component: {fileID: 7113119240061700922}
   - component: {fileID: 2476200517764973625}
   - component: {fileID: 856883784041160479}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Main
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -139,7 +139,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 2
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 2844a461f6a833845943c89724feb2cc, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -232,6 +232,7 @@ MonoBehaviour:
   Speed: 6
   cameraFollowObject: {fileID: 0}
   JumpForce: 10
+  AirControl: 0.8
   WhatIsGround:
     serializedVersion: 2
     m_Bits: 64
@@ -246,7 +247,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   WallJumpingDuration: 0.1
-  wallJumpingForce: {x: 2.5, y: 7}
+  wallJumpingForce: {x: 3, y: 7}
   FallMultiplier: 4
   MaxJumpTime: 0.3
   MoveAction:
@@ -333,6 +334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c72cdb2964321cd42a637dfe9d43a6a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  combatMode: 0
   hitbox: {fileID: 0}
   lightComboButton:
     m_Name: Light Combo Button
