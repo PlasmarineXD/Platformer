@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using System.Runtime.CompilerServices;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -18,7 +19,9 @@ public class PlayerController : MonoBehaviour
     private StateMachine Machine;
     [SerializeField] GameObject cameraFollowObject;
     private CameraFollow Camera;
+    private BoxCollider2D Box;
     private ComboCharacter comboCharacter;
+    private HealthSystem Health;
 
     [Header("Jump Settings")]
     private bool bOnGround = true;
@@ -71,6 +74,8 @@ public class PlayerController : MonoBehaviour
         Machine = GetComponent<StateMachine>();
         Camera = cameraFollowObject.GetComponent<CameraFollow>();
         comboCharacter = GetComponent<ComboCharacter>();
+        Box = GetComponent<BoxCollider2D>();
+        Health = GetComponent<HealthSystem>();
 
         MoveAction.Enable();
         Jump.Enable();
@@ -203,10 +208,14 @@ public class PlayerController : MonoBehaviour
         bIsDashing = true;
         animator.SetBool("IsDashing", true);
         ghostingEffect.enableGhost = true;
+        Health.bCanBeDamage = false;
         float OriginalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(Direction * DashPower, 0f);
+        Box.isTrigger = true;
         yield return new WaitForSeconds(DashingTime);
+        Health.bCanBeDamage = true;
+        Box.isTrigger = false;
         rb.gravityScale = OriginalGravity;
         bIsDashing = false;
         animator.SetBool("IsDashing", false);
@@ -254,5 +263,28 @@ public class PlayerController : MonoBehaviour
             bIsJumping = false;
             wallJumpingCounter = WallJumpingDuration;
         }
+    }
+
+    private IEnumerator TakeDamage()
+    {
+        Health.bCanBeDamage = false;
+        yield return new WaitForSeconds(2f);
+        Health.bCanBeDamage = true;
+    }
+
+    private IEnumerator Dead()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Destroy(gameObject);
+    }
+
+    public void OnTakeDamage()
+    {
+        StartCoroutine(TakeDamage());
+    }
+
+    public void OnDead()
+    {
+        StartCoroutine (Dead());
     }
 }
