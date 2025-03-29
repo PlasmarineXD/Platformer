@@ -152,4 +152,29 @@ public class Skeleton_Enemy : Base_Enemy
             Patrol.Flip();
         }
     }
+
+    public override void TakeDamage()
+    {
+        base.TakeDamage();
+        if (InRange())
+        {
+            Target.transform.GetComponent<HealthSystem>().TakeDamage(Damage);
+        }
+        else
+        {
+            Patrol.Flip();
+        }
+    }
+
+    private IEnumerator DeadCoRoutine()
+    {
+        yield return new WaitForSeconds(1f);
+        Destroy(gameObject);
+    }
+
+    public override void Dead()
+    {
+        base.Dead();
+        StartCoroutine(DeadCoRoutine());
+    }
 }

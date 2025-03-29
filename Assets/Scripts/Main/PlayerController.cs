@@ -212,10 +212,8 @@ public class PlayerController : MonoBehaviour
         float OriginalGravity = rb.gravityScale;
         rb.gravityScale = 0f;
         rb.velocity = new Vector2(Direction * DashPower, 0f);
-        Box.isTrigger = true;
         yield return new WaitForSeconds(DashingTime);
         Health.bCanBeDamage = true;
-        Box.isTrigger = false;
         rb.gravityScale = OriginalGravity;
         bIsDashing = false;
         animator.SetBool("IsDashing", false);
@@ -286,5 +284,10 @@ public class PlayerController : MonoBehaviour
     public void OnDead()
     {
         StartCoroutine (Dead());
+    }
+
+    private void Attack()
+    {
+
     }
 }

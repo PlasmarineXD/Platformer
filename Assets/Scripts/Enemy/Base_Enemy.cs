@@ -29,7 +29,7 @@ public class Base_Enemy : MonoBehaviour
 
     }
 
-    public virtual void OnDead()
+    public virtual void Dead()
     {
 
     }
